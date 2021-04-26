@@ -20,17 +20,16 @@ public class MotdController {
     }
 
     @PostMapping("/message")
-    public HttpStatus createMessage(@RequestParam(value = "userName") String userName ,
+    public HttpStatus createMessage(@RequestParam(value = "userName") String userName,
                               @RequestParam(value = "messageText") String message){
         User user = searchUser(userName);
         user.setUserMessage(message);
-        return HttpStatus.ACCEPTED;
+        return HttpStatus.CREATED;
     }
 
-    @GetMapping(path = "/getMessage", produces = "text/HTML")
-    public String getMessage(@RequestParam(value = "userName") String userName){
-        User foundUser = searchUser(userName);
-        return "" + foundUser.getUserName() + "'s Status lautet: " + foundUser.getUserMessage();
+    @GetMapping(path = "/getMessage", produces = "application/json")
+    public User getMessage(@RequestParam(value = "userName") String userName){
+        return searchUser(userName);
     }
 
     public User searchUser(String givenUserName){
