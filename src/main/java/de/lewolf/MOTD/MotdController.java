@@ -1,9 +1,7 @@
 package de.lewolf.MOTD;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,20 +13,24 @@ public class MotdController {
     private List<User> allUsers = new ArrayList();
 
     @PostMapping("/userName")
-    public void generateNewUser(@RequestBody String userName) {
+    public HttpStatus generateNewUser(@RequestParam(value = "userName") String userName) {
         currentUser = new User(userName);
         allUsers.add(currentUser);
+        return HttpStatus.CREATED;
     }
 
     @PostMapping("/message")
-    public void createMessage(@RequestBody String message){
-        currentUser.setUserMessage(message);
+    public HttpStatus createMessage(@RequestParam(value = "userName") String userName ,
+                              @RequestParam(value = "messageText") String message){
+        User user = searchUser(userName);
+        user.setUserMessage(message);
+        return HttpStatus.ACCEPTED;
     }
 
-    @GetMapping(path = "/getMessage", produces = "application/json")
-    public String getMessage(@RequestBody String userName){
+    @GetMapping(path = "/getMessage", produces = "text/HTML")
+    public String getMessage(@RequestParam(value = "userName") String userName){
         User foundUser = searchUser(userName);
-        return foundUser.getUserMessage();
+        return "" + foundUser.getUserName() + "'s Status lautet: " + foundUser.getUserMessage();
     }
 
     public User searchUser(String givenUserName){
