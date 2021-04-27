@@ -1,30 +1,29 @@
 package de.lewolf.MOTD;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class MotdController {
 
-    private MotdService service = new MotdService();
+    private final MotdService service;
 
-    @PostMapping("/userName")
-    public @ResponseBody
-    User generateNewUser(@RequestParam(value = "userName") String userName) {
-        User user = service.generateNewUser(userName);
-        return user;
+    public MotdController(MotdService service) {
+        this.service = service;
     }
 
-    @PostMapping("/message")
-    public @ResponseBody
-    Message createMessage(@RequestParam(value = "userName") String userName,
-                          @RequestParam(value = "messageText") String message) {
-        Message userMessage = service.setMessage(userName, message);
-        return userMessage;
+    @PostMapping("/user/{userName}")
+    public ResponseEntity<User> generateNewUser(@PathVariable String userName) {
+        return service.generateNewUser(userName);
     }
 
-    @GetMapping(path = "/getMessage", produces = "application/json")
-    public @ResponseBody
-    User getMessage(@RequestParam(value = "userName") String userName) {
+    @PostMapping(path = "/message", consumes = "application/json")
+    public ResponseEntity<Message> createMessage(@RequestBody InputDto dto) {
+        return service.setMessage(dto.getUserName(), dto.getMessage());
+    }
+
+    @GetMapping(path = "/message/{userName}", produces = "application/json")
+    public ResponseEntity<User> getMessage(@PathVariable String userName) {
         return service.getMessage(userName);
     }
 
