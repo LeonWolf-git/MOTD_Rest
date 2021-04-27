@@ -1,5 +1,7 @@
-package de.lewolf.MOTD;
+package de.lewolf.MOTD.Service;
 
+import de.lewolf.MOTD.Models.Message;
+import de.lewolf.MOTD.Models.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,32 +14,34 @@ public class MotdService {
 
     private List<User> allUsers = new ArrayList();
 
-    public ResponseEntity<User> generateNewUser(String userName) {
+    // Todo: return objects
+
+    public User generateNewUser(String userName) {
         if (!userAlreadyExists(userName)) {
             User generatedUser = new User(userName);
             allUsers.add(generatedUser);
-            return new ResponseEntity<>(generatedUser, HttpStatus.CREATED);
+            return generatedUser;
         } else {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            return null;
         }
     }
 
-    public ResponseEntity<Message> setMessage(String userName, String messageText) {
+    public Message setMessage(String userName, String messageText) {
         User foundUser = searchUser(userName);
         if (foundUser != null) {
             foundUser.setUserMessage(messageText);
-            return new ResponseEntity<>(foundUser.getUserMessage(), HttpStatus.CREATED);
+            return foundUser.getUserMessage();
         } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return null;
         }
     }
 
-    public ResponseEntity<User> getMessage(String userName) {
+    public User getMessage(String userName) {
         User foundUser = searchUser(userName);
         if (foundUser != null) {
-            return new ResponseEntity<>(foundUser, HttpStatus.CREATED);
+            return foundUser;
         } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return null;
         }
     }
 

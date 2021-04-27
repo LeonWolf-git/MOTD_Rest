@@ -1,4 +1,4 @@
-package de.lewolf.MOTD;
+package de.lewolf.MOTD.Models;
 
 public class User {
 
