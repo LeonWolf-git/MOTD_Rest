@@ -18,8 +18,8 @@ public class User {
         userMessage.setMessageText(messageText);
     }
 
-    public String getUserMessage() {
-        return userMessage.getMessageText();
+    public Message getUserMessage() {
+        return userMessage;
     }
 
 }
