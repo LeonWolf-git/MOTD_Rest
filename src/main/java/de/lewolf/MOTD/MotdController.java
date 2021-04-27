@@ -17,7 +17,7 @@ public class MotdController {
     @PostMapping("/message")
     public @ResponseBody
     Message createMessage(@RequestParam(value = "userName") String userName,
-                         @RequestParam(value = "messageText") String message) {
+                          @RequestParam(value = "messageText") String message) {
         Message userMessage = service.setMessage(userName, message);
         return userMessage;
     }
