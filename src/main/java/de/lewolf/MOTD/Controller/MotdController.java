@@ -4,9 +4,11 @@ import de.lewolf.MOTD.Models.InputDto;
 import de.lewolf.MOTD.Models.Message;
 import de.lewolf.MOTD.Service.MotdService;
 import de.lewolf.MOTD.Models.User;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 public class MotdController {
@@ -16,8 +18,6 @@ public class MotdController {
     public MotdController(MotdService service) {
         this.service = service;
     }
-
-    // Todo: MySQL holen --> erstellen --> anbinden per JDBC
 
     @PostMapping("/user/{userName}")
     public ResponseEntity<User> generateNewUser(@PathVariable String userName) {

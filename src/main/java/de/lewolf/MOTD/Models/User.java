@@ -7,7 +7,12 @@ public class User {
 
     public User(String userName) {
         this.userName = userName;
-        this.userMessage = new Message("Adam goes here");
+        this.userMessage = new Message("");
+    }
+
+    public User(String userName, Message userMessage) {
+        this.userName = userName;
+        this.userMessage = userMessage;
     }
 
     public String getUserName() {
