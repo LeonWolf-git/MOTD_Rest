@@ -11,8 +11,6 @@ public class Dao {
 
     private final String url = "jdbc:mysql://localhost:3306/userdb";
 
-    // Todo: Message auf nullable
-
     public User insertUser(String userName) {
         Connection connection = null;
         try {
