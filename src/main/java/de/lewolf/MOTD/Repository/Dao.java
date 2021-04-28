@@ -1,4 +1,4 @@
-package de.lewolf.MOTD;
+package de.lewolf.MOTD.Repository;
 
 import de.lewolf.MOTD.Models.Message;
 import de.lewolf.MOTD.Models.User;

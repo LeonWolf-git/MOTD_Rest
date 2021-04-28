@@ -1,12 +1,9 @@
 package de.lewolf.MOTD.Service;
 
-import de.lewolf.MOTD.Dao;
+import de.lewolf.MOTD.Repository.Dao;
 import de.lewolf.MOTD.Models.Message;
 import de.lewolf.MOTD.Models.User;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class MotdService {
