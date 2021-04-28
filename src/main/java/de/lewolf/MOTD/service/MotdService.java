@@ -1,8 +1,7 @@
-package de.lewolf.MOTD.Service;
+package de.lewolf.MOTD.service;
 
-import de.lewolf.MOTD.Repository.Dao;
-import de.lewolf.MOTD.Models.Message;
-import de.lewolf.MOTD.Models.User;
+import de.lewolf.MOTD.repository.Dao;
+import de.lewolf.MOTD.models.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,14 +14,14 @@ public class MotdService {
     }
 
     public User generateNewUser(String userName) {
-       return dao.insertUser(userName);
+        return dao.insertUser(userName);
     }
 
-    public Message setMessage(String userName, String messageText) { ;
+    public User setMessage(String userName, String messageText) { ;
         return dao.insertMessage(userName, messageText);
     }
 
     public User getMessage(String userName) {
-        return dao.getMessage(userName);
+        return dao.getUser(userName);
     }
 }

@@ -1,4 +1,4 @@
-package de.lewolf.MOTD.Models;
+package de.lewolf.MOTD.models;
 
 public class InputDto {
 
