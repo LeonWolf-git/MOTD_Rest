@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class ExceptionController {
+public class ControllerExceptionHandler {
     @ExceptionHandler(value = ServerConnectionException.class)
     public ResponseEntity<?> exception(ServerConnectionException exception) {
         return new ResponseEntity<>("Server nicht erreichbar!", HttpStatus.SERVICE_UNAVAILABLE);

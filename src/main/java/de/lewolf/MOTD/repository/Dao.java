@@ -8,9 +8,13 @@ import de.lewolf.MOTD.models.User;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 
 @Repository
 public class Dao {
+
+    // Todo: wenn ich als user den service aufrufe, möchte ich meine message von heute bekommen
+    // Todo: Optional Message von anderem Rest-Service aufrufen
 
     private final String url = "jdbc:mysql://localhost:3306/userdb";
 
@@ -21,23 +25,24 @@ public class Dao {
             stmnt.setString(1, userName);
             stmnt.setString(2, null);
             stmnt.executeUpdate();
-            return getUser(userName);
         } catch (SQLException e) {
             throw new UserAlreadyExistsException(e);
         }
+        return getUser(userName);
     }
 
-    public User insertMessage(String username, String message) {
-        String query = "UPDATE userdb.users SET message=? WHERE username=?";
+    public User insertMessage(String username, String message, LocalDate date) {
+        String query = "INSERT INTO userdb.messages (username, message, dateOfMessage) VALUES (?, ?, ?)";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
-            stmnt.setString(1, message);
-            stmnt.setString(2, username);
+            stmnt.setString(1, username);
+            stmnt.setString(2, message);
+            stmnt.setDate(3, Date.valueOf(date));
             stmnt.executeUpdate();
-            return getUser(username);
         } catch (SQLException e) {
             throw new UserNotFoundException(e);
         }
+        return getUser(username);
     }
 
     public User getUser(String username) {

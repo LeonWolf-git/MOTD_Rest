@@ -4,6 +4,9 @@ import de.lewolf.MOTD.repository.Dao;
 import de.lewolf.MOTD.models.User;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.time.LocalDate;
+
 @Service
 public class MotdService {
 
@@ -17,8 +20,8 @@ public class MotdService {
         return dao.insertUser(userName);
     }
 
-    public User setMessage(String userName, String messageText) { ;
-        return dao.insertMessage(userName, messageText);
+    public User setMessage(String userName, String messageText, LocalDate date) { ;
+        return dao.insertMessage(userName, messageText, date);
     }
 
     public User getMessage(String userName) {
