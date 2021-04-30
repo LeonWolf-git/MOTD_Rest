@@ -20,8 +20,6 @@ import java.util.LinkedHashMap;
 @Repository
 public class Dao {
 
-    // Todo: Optional Message von anderem Rest-Service aufrufen
-
     private final String url = "jdbc:mysql://localhost:3306/userdb";
 
     public User insertUser(String username) {
@@ -37,7 +35,7 @@ public class Dao {
         return getUser(username);
     }
 
-    public Message insertMessage(String username, String message, LocalDate date) {
+    public Message insertMessage(String username, String message, LocalDate date) { //Todo: Direkt Message Objekt übergeben (Zusammenbau im Controller)
         getUser(username);
         String query = "INSERT INTO userdb.messages (username, message, dateOfMessage) VALUES (?, ?, ?)";
         try (Connection connection = establishConnection();
@@ -59,23 +57,23 @@ public class Dao {
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                resultSet.next();
-                return new User(resultSet.getString(1), new Message(resultSet.getString(2)));
+                resultSet.next(); // Todo: Rückgabe Wert von resultSet abfragen und reagieren (nur verarbeiten wenn vorhanden)
+                return new User(resultSet.getString("username"), new Message(resultSet.getString("message")));
             }
         } catch (SQLException e) {
             throw new UserNotFoundException("Der User: " + username + " konnte nicht gefunden werden!");
         }
     }
 
-    public Message getMessage(String username, LocalDate date) {
+    public Message getMessage(String username, LocalDate date) { // Todo: Optional<Message> als Rückgabewert (o. null)
         String query = "SELECT * FROM userdb.messages WHERE username=? AND dateOfMessage=?";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             stmnt.setDate(2, Date.valueOf(date));
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                resultSet.next();
-                return new Message(resultSet.getString(2));
+                resultSet.next(); // Todo: Rückgabe Wert von resultSet abfragen und reagieren (nur verarbeiten wenn vorhanden)
+                return new Message(resultSet.getString("message"));
             }
         } catch (SQLException e) {
             return new Message(getWeirdJoke());
@@ -111,11 +109,11 @@ public class Dao {
         }
     }
 
-    public String getWeirdJoke() {
+    public String getWeirdJoke() {  // Todo: Auslagerung in einen eigenen Service
         try {
             URL url = new URL("http://api.icndb.com/jokes/random");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            InputStream is = con.getInputStream();
+            InputStream is = con.getInputStream(); // Todo: In eigenen Try with Resources Block
             JSONParser jsonParser = new JSONParser(is);
             JSONObject jsonObjectAll = new JSONObject(jsonParser.parseObject());
             LinkedHashMap<String, Object> linkedHashMapValue = (LinkedHashMap<String, Object>) jsonObjectAll.get("value");
