@@ -1,6 +1,7 @@
 package de.lewolf.MOTD.controller;
 
 import de.lewolf.MOTD.models.InputDto;
+import de.lewolf.MOTD.models.Message;
 import de.lewolf.MOTD.service.MotdService;
 import de.lewolf.MOTD.models.User;
 
@@ -26,16 +27,16 @@ public class MotdController {
 
 
     @PostMapping(path = "/message", consumes = "application/json")
-    public ResponseEntity<User> createMessage(@RequestBody InputDto dto) {
-        User user = service.setMessage(dto.getUserName(), dto.getMessage(), dto.getDate());
+    public ResponseEntity<Message> createMessage(@RequestBody InputDto dto) {
+        Message message = service.setMessage(dto.getUserName(), dto.getMessage(), dto.getDate());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(user);
+                .body(message);
     }
 
     @GetMapping(path = "/message/{userName}", produces = "application/json")
-    public ResponseEntity<User> getMessage(@PathVariable String userName) {
-        User user = service.getMessage(userName);
+    public ResponseEntity<Message> getMOTD(@PathVariable String userName) {
+        Message message = service.getMOTD(userName);
         return ResponseEntity.ok()
-                .body(user);
+                .body(message);
     }
 }
