@@ -40,6 +40,7 @@ public class Dao {
     }
 
     public Message insertMessage(String username, String message, LocalDate date) {
+        getUser(username);
         String query = "INSERT INTO userdb.messages (username, message, dateOfMessage) VALUES (?, ?, ?)";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
@@ -52,6 +53,7 @@ public class Dao {
         }
         return getMessage(username, date);
     }
+
 
     public User getUser(String username) {
         String query = "SELECT * FROM userdb.users WHERE username=?";
@@ -82,7 +84,7 @@ public class Dao {
         }
     }
 
-    public Message getMOTD(String username){
+    public Message getMOTD(String username) {
         setMOTD(username);
         String query = "SELECT message FROM userdb.users WHERE username=?";
         try (Connection connection = establishConnection();
@@ -111,7 +113,7 @@ public class Dao {
         }
     }
 
-    public String getWeirdJoke(){
+    public String getWeirdJoke() {
         try {
             URL url = new URL("http://api.icndb.com/jokes/random");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
