@@ -3,7 +3,6 @@ package de.lewolf.MOTD.repository;
 import de.lewolf.MOTD.exceptions.*;
 import de.lewolf.MOTD.models.Message;
 import de.lewolf.MOTD.models.User;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.json.JSONException;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
