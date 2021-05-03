@@ -7,7 +7,7 @@ public class User {
 
     public User(String userName) {
         this.userName = userName;
-        this.userMessage = new Message("");
+        this.userMessage = null;
     }
 
     public User(String userName, Message userMessage) {

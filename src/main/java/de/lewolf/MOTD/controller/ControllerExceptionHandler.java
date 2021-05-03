@@ -33,4 +33,9 @@ public class ControllerExceptionHandler {
     public ResponseEntity<?> exception(URLNotResponsiveException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
     }
+
+    @ExceptionHandler(value = SomethingWentTerriblyWrongException.class)
+    public ResponseEntity<?> exception(SomethingWentTerriblyWrongException exception){
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

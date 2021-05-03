@@ -11,18 +11,20 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 @Repository
 public class Dao {
 
     private final String url = "jdbc:mysql://localhost:3306/userdb";
 
-    public User insertUser(String username) {
+    public void insertUser(String username) {
         String query = "INSERT INTO userdb.users (username, message) VALUES (?, ?)";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
@@ -32,10 +34,9 @@ public class Dao {
         } catch (SQLException e) {
             throw new UserAlreadyExistsException("Der User: " + username + " existiert bereits!");
         }
-        return getUser(username);
     }
 
-    public Message insertMessage(String username, String message, LocalDate date) { //Todo: Direkt Message Objekt übergeben (Zusammenbau im Controller)
+    public void insertMessage(String username, String message, LocalDate date) {
         getUser(username);
         String query = "INSERT INTO userdb.messages (username, message, dateOfMessage) VALUES (?, ?, ?)";
         try (Connection connection = establishConnection();
@@ -47,7 +48,18 @@ public class Dao {
         } catch (SQLException e) {
             throw new UserNotFoundException("Der User: " + username + " existiert nicht!");
         }
-        return getMessage(username, date);
+    }
+
+    public String getMessageForDate (String userName, LocalDate date){
+        getUser(userName);
+        Optional<Message> optionalMessage = getMessage(userName, date);
+        if(optionalMessage.isPresent()){
+            Message message = optionalMessage.get();
+            return message.getMessageText();
+        }
+        else{
+            throw new MessageNotFoundException("Es konnte keine Message für diesen Tag gefunden werden!");
+        }
     }
 
 
@@ -57,30 +69,36 @@ public class Dao {
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                resultSet.next(); // Todo: Rückgabe Wert von resultSet abfragen und reagieren (nur verarbeiten wenn vorhanden)
-                return new User(resultSet.getString("username"), new Message(resultSet.getString("message")));
+                while (resultSet.next()) {
+                    return new User(resultSet.getString("username"), null);
+                }
+                throw new SQLException();
             }
         } catch (SQLException e) {
             throw new UserNotFoundException("Der User: " + username + " konnte nicht gefunden werden!");
         }
     }
 
-    public Message getMessage(String username, LocalDate date) { // Todo: Optional<Message> als Rückgabewert (o. null)
+
+    public Optional<Message> getMessage(String username, LocalDate date) { // Todo: Optional<Message> als Rückgabewert (o. null)
         String query = "SELECT * FROM userdb.messages WHERE username=? AND dateOfMessage=?";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             stmnt.setDate(2, Date.valueOf(date));
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                resultSet.next(); // Todo: Rückgabe Wert von resultSet abfragen und reagieren (nur verarbeiten wenn vorhanden)
-                return new Message(resultSet.getString("message"));
+                while (resultSet.next()) {
+                    Message message = new Message(resultSet.getString("message"), resultSet.getDate("dateOfMessage").toLocalDate());
+                    return Optional.of(message);
+                }
+                throw new SQLException();
             }
         } catch (SQLException e) {
-            return new Message(getWeirdJoke());
+            return Optional.empty() ;
         }
     }
 
-    public Message getMOTD(String username) {
+    public String getMOTD(String username) {
         setMOTD(username);
         String query = "SELECT message FROM userdb.users WHERE username=?";
         try (Connection connection = establishConnection();
@@ -88,7 +106,7 @@ public class Dao {
             stmnt.setString(1, username);
             try (ResultSet resultSet = stmnt.executeQuery()) {
                 resultSet.next();
-                return new Message(resultSet.getString(1));
+                return resultSet.getString("message");
             }
         } catch (SQLException e) {
             throw new MessageNotFoundException("Die gesuchte Nachricht konnte nicht gefunden wurden");
@@ -96,16 +114,22 @@ public class Dao {
     }
 
     public void setMOTD(String username) {
-        Message message = getMessage(username, LocalDate.now());
-        String query = "UPDATE userdb.users SET message=? WHERE username=?";
-        try (Connection connection = establishConnection();
-             PreparedStatement stmnt = connection.prepareStatement(query)) {
-            stmnt.setString(1, message.getMessageText());
-            stmnt.setString(2, username);
-            stmnt.executeUpdate();
-        } catch (SQLException e) {
-            throw new MessageNotFoundException(
-                    "Es konnte keine Nachricht fuer den User: " + username + " gefunden werden!");
+        Optional<Message> optionalMessage = getMessage(username, LocalDate.now());
+        if(optionalMessage.isPresent()) {
+            Message message = optionalMessage.get();
+            String query = "UPDATE userdb.users SET message=? WHERE username=?";
+            try (Connection connection = establishConnection();
+                 PreparedStatement stmnt = connection.prepareStatement(query)) {
+                stmnt.setString(1, message.getMessageText());
+                stmnt.setString(2, username);
+                stmnt.executeUpdate();
+            } catch (SQLException e) {
+                throw new SomethingWentTerriblyWrongException(
+                        "Something in your request destroyed us. We don't even know what you did, and we also can't offer any solution at the moment. Pray!");
+            }
+        }
+        else{
+            throw new MessageNotFoundException("Es konnte keine Nachricht fuer den User: " + username + " gefunden werden!");
         }
     }
 
