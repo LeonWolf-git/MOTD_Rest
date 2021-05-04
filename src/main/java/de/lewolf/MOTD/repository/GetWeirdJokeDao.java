@@ -6,7 +6,6 @@ import org.apache.tomcat.util.json.ParseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,12 +16,12 @@ import java.util.LinkedHashMap;
 @Component
 public class GetWeirdJokeDao {
 
-    public String getWeirdJoke() {  // Todo: Auslagerung in einen eigenen Service
+    public String getWeirdJoke() {
         String stringurl = "http://api.icndb.com/jokes/random";
         try {
             URL url = new URL(stringurl);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            try(InputStream is = con.getInputStream()) {
+            try (InputStream is = con.getInputStream()) {
                 JSONParser jsonParser = new JSONParser(is);
                 JSONObject jsonObjectAll = new JSONObject(jsonParser.parseObject());
                 LinkedHashMap<String, Object> linkedHashMapValue = (LinkedHashMap<String, Object>) jsonObjectAll.get("value");
