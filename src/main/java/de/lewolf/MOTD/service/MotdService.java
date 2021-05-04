@@ -1,12 +1,11 @@
 package de.lewolf.MOTD.service;
 
 import de.lewolf.MOTD.models.Message;
-import de.lewolf.MOTD.models.MessageForDateDto;
 import de.lewolf.MOTD.repository.Dao;
-import de.lewolf.MOTD.models.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class MotdService {
@@ -21,7 +20,8 @@ public class MotdService {
         dao.insertUser(userName);
     }
 
-    public void setMessage(String userName, String messageText, LocalDate date) { ;
+    public void setMessage(String userName, String messageText, LocalDate date) {
+        ;
         dao.insertMessage(userName, messageText, date);
     }
 
@@ -29,7 +29,11 @@ public class MotdService {
         return dao.getMOTD(userName);
     }
 
-    public String getMessageForDate(String userName, LocalDate date){
+    public String getMessageForDate(String userName, LocalDate date) {
         return dao.getMessageForDate(userName, date);
+    }
+
+    public List<Message> getAllMessagesForUser(String userName) {
+        return dao.getAllMessagesForUser(userName);
     }
 }

@@ -35,7 +35,7 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(value = SomethingWentTerriblyWrongException.class)
-    public ResponseEntity<?> exception(SomethingWentTerriblyWrongException exception){
+    public ResponseEntity<?> exception(SomethingWentTerriblyWrongException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
