@@ -80,7 +80,7 @@ public class Dao {
     }
 
 
-    public Optional<Message> getMessage(String username, LocalDate date) { // Todo: Optional<Message> als Rückgabewert (o. null)
+    public Optional<Message> getMessage(String username, LocalDate date) {
         String query = "SELECT * FROM userdb.messages WHERE username=? AND dateOfMessage=?";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
@@ -130,21 +130,6 @@ public class Dao {
         }
         else{
             throw new MessageNotFoundException("Es konnte keine Nachricht fuer den User: " + username + " gefunden werden!");
-        }
-    }
-
-    public String getWeirdJoke() {  // Todo: Auslagerung in einen eigenen Service
-        try {
-            URL url = new URL("http://api.icndb.com/jokes/random");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            InputStream is = con.getInputStream(); // Todo: In eigenen Try with Resources Block
-            JSONParser jsonParser = new JSONParser(is);
-            JSONObject jsonObjectAll = new JSONObject(jsonParser.parseObject());
-            LinkedHashMap<String, Object> linkedHashMapValue = (LinkedHashMap<String, Object>) jsonObjectAll.get("value");
-            String message = linkedHashMapValue.get("joke").toString();
-            return "Wir haben leider kein Motto des Tages gefunden, daher habe doch diesen Witz: " + message;
-        } catch (IOException | ParseException | JSONException e) {
-            throw new URLNotResponsiveException("Die aufgerufene Website: " + url + " konnte nicht geladen werden!");
         }
     }
 

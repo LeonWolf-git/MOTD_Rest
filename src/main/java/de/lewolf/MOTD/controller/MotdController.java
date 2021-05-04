@@ -1,8 +1,10 @@
 package de.lewolf.MOTD.controller;
 
+import de.lewolf.MOTD.exceptions.MessageNotFoundException;
 import de.lewolf.MOTD.models.InputMessageDto;
 import de.lewolf.MOTD.models.Message;
 import de.lewolf.MOTD.models.MessageForDateDto;
+import de.lewolf.MOTD.service.GetWeirdJokeService;
 import de.lewolf.MOTD.service.MotdService;
 import de.lewolf.MOTD.models.User;
 
@@ -17,9 +19,11 @@ import java.time.LocalDate;
 public class MotdController {
 
     private final MotdService service;
+    private final GetWeirdJokeService weirdJokeService;
 
-    public MotdController(MotdService service) {
+    public MotdController(MotdService service, GetWeirdJokeService weirdJokeService) {
         this.service = service;
+        this.weirdJokeService = weirdJokeService;
     }
 
     @PostMapping("/user/{userName}")
@@ -50,8 +54,14 @@ public class MotdController {
 
     @GetMapping(path = "/message/{userName}", produces = "application/json")
     public ResponseEntity<User> getMOTD(@PathVariable String userName) {
-        String messageText = service.getMOTD(userName);
-        Message motd = new Message(messageText, LocalDate.now());
+        Message motd;
+        try {
+            String messageText = service.getMOTD(userName);
+            motd = new Message(messageText, LocalDate.now());
+        }
+        catch(MessageNotFoundException e){
+            motd = new Message(weirdJokeService.getWeirdJoke(), LocalDate.now());
+        }
         User user = new User(userName, motd);
         return ResponseEntity.ok()
                 .body(user);
