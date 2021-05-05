@@ -1,17 +1,14 @@
 package de.lewolf.MOTD.controller;
 
-import de.lewolf.MOTD.exceptions.MessageNotFoundException;
 import de.lewolf.MOTD.models.InputMessageDto;
 import de.lewolf.MOTD.models.Message;
 import de.lewolf.MOTD.models.MessageForDateDto;
 import de.lewolf.MOTD.models.User;
-import de.lewolf.MOTD.service.GetWeirdJokeService;
 import de.lewolf.MOTD.service.MotdService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -19,11 +16,9 @@ import java.util.List;
 public class MotdController {
 
     private final MotdService service;
-    private final GetWeirdJokeService weirdJokeService;
 
-    public MotdController(MotdService service, GetWeirdJokeService weirdJokeService) {
+    public MotdController(MotdService service) {
         this.service = service;
-        this.weirdJokeService = weirdJokeService;
     }
 
     @PostMapping("/user/{userName}")
@@ -43,9 +38,8 @@ public class MotdController {
 
     @GetMapping(path = "/messageForDate", consumes = "application/json")
     public ResponseEntity<User> getMessageForDate(@RequestBody MessageForDateDto dto) {
-        String message = service.getMessageForDate(dto.getUserName(), dto.getDate());
-        Message messageForDate = new Message(message, dto.getDate());
-        User user = new User(dto.getUserName(), messageForDate);
+        Message message = service.getMessageForDate(dto.getUserName(), dto.getDate());
+        User user = new User(dto.getUserName(), message);
         return ResponseEntity.ok()
                 .body(user);
     }
@@ -60,15 +54,9 @@ public class MotdController {
 
     @GetMapping(path = "/message/{userName}", produces = "application/json")
     public ResponseEntity<User> getMOTD(@PathVariable String userName) {
-        Message motd;
-        try {
-            String messageText = service.getMOTD(userName);
-            motd = new Message(messageText, LocalDate.now());
-        } catch (MessageNotFoundException e) {
-            motd = new Message(weirdJokeService.getWeirdJoke(), LocalDate.now());
-        }
-        User user = new User(userName, motd);
+        User user = new User(userName, service.getMOTD(userName));
         return ResponseEntity.ok()
                 .body(user);
     }
+
 }

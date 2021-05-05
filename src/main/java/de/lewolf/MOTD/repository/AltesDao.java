@@ -12,16 +12,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class Dao {
+public class AltesDao {
 
     private final String url = "jdbc:mysql://localhost:3306/userdb";
 
     public void insertUser(String username) {
-        String query = "INSERT INTO userdb.users (username, message) VALUES (?, ?)";
+        String query = "INSERT INTO userdb.users (username) VALUES (?)";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
-            stmnt.setString(2, null);
             stmnt.executeUpdate();
         } catch (SQLException e) {
             throw new UserAlreadyExistsException("Der User: " + username + " existiert bereits!");
@@ -44,15 +43,16 @@ public class Dao {
 
     public String getMessageForDate(String userName, LocalDate date) {
         getUser(userName);
-        Optional<Message> optionalMessage = getMessage(userName, date);
-        if (optionalMessage.isPresent()) {
+        return getMessage(userName, date)
+                .map(Message::getMessageText)
+                .orElseThrow(() -> new MessageNotFoundException("Es konnte keine Message für diesen Tag gefunden werden!"));
+        /*if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
             return message.getMessageText();
         } else {
             throw new MessageNotFoundException("Es konnte keine Message für diesen Tag gefunden werden!");
-        }
+        }*/
     }
-
 
     public User getUser(String username) {
         String query = "SELECT * FROM userdb.users WHERE username=?";
@@ -70,7 +70,6 @@ public class Dao {
         }
     }
 
-
     public Optional<Message> getMessage(String username, LocalDate date) {
         String query = "SELECT * FROM userdb.messages WHERE username=? AND dateOfMessage=?";
         try (Connection connection = establishConnection();
@@ -78,61 +77,47 @@ public class Dao {
             stmnt.setString(1, username);
             stmnt.setDate(2, Date.valueOf(date));
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                while (resultSet.next()) {
+                if (resultSet.next()) {
                     Message message = new Message(resultSet.getString("message"), resultSet.getDate("dateOfMessage").toLocalDate());
                     return Optional.of(message);
                 }
-                throw new SQLException();
+                return Optional.empty();
             }
         } catch (SQLException e) {
             return Optional.empty();
         }
     }
 
-    public String getMOTD(String username) {
-        setMOTD(username);
-        String query = "SELECT message FROM userdb.users WHERE username=?";
+    public Optional<String> getMOTD(String username) {
+        String query = "SELECT message FROM userdb.message WHERE username=?";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             try (ResultSet resultSet = stmnt.executeQuery()) {
-                resultSet.next();
-                return resultSet.getString("message");
+                if (resultSet.next()) {
+                    return Optional.of(resultSet.getString("message"));
+                }
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new MessageNotFoundException("Die gesuchte Nachricht konnte nicht gefunden wurden");
         }
     }
 
-    public void setMOTD(String username) {
-        Optional<Message> optionalMessage = getMessage(username, LocalDate.now());
-        if (optionalMessage.isPresent()) {
-            Message message = optionalMessage.get();
-            String query = "UPDATE userdb.users SET message=? WHERE username=?";
-            try (Connection connection = establishConnection();
-                 PreparedStatement stmnt = connection.prepareStatement(query)) {
-                stmnt.setString(1, message.getMessageText());
-                stmnt.setString(2, username);
-                stmnt.executeUpdate();
-            } catch (SQLException e) {
-                throw new SomethingWentTerriblyWrongException(
-                        "Something in your request destroyed us. We don't even know what you did, and we also can't offer any solution at the moment. Pray!");
-            }
-        } else {
-            throw new MessageNotFoundException("Es konnte keine Nachricht fuer den User: " + username + " gefunden werden!");
-        }
-    }
-
     public List<Message> getAllMessagesForUser(String username) {
         getUser(username);
         List<Message> allMessageTexts = new ArrayList<>();
-        String query = "SELECT * FROM userdb.messages WHERE username=?";
+        String query = "SELECT u.username, m.message, m.dateOfMessage" +
+                " FROM userdb.users u" +
+                " JOIN messages m ON m.username = u.username" +
+                " WHERE u.username = ?;";
         try (Connection connection = establishConnection();
              PreparedStatement stmnt = connection.prepareStatement(query)) {
             stmnt.setString(1, username);
             try (ResultSet resultSet = stmnt.executeQuery()) {
                 while (resultSet.next()) {
-                    allMessageTexts.add(new Message(resultSet.getString("message"),
+                    allMessageTexts.add(new Message(
+                            resultSet.getString("message"),
                             resultSet.getDate("dateOfMessage").toLocalDate()));
                 }
                 return allMessageTexts;

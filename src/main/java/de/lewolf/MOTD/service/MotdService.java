@@ -1,7 +1,8 @@
 package de.lewolf.MOTD.service;
 
 import de.lewolf.MOTD.models.Message;
-import de.lewolf.MOTD.repository.Dao;
+import de.lewolf.MOTD.repository.UsersDaoInterface;
+import de.lewolf.MOTD.service.weirdjoke.GetWeirdJokeService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -10,10 +11,12 @@ import java.util.List;
 @Service
 public class MotdService {
 
-    private Dao dao;
+    private final UsersDaoInterface dao;
+    private final GetWeirdJokeService weirdJokeService;
 
-    public MotdService(Dao dao) {
+    public MotdService(UsersDaoInterface dao, GetWeirdJokeService weirdJokeService) {
         this.dao = dao;
+        this.weirdJokeService = weirdJokeService;
     }
 
     public void generateNewUser(String userName) {
@@ -21,19 +24,19 @@ public class MotdService {
     }
 
     public void setMessage(String userName, String messageText, LocalDate date) {
-        ;
         dao.insertMessage(userName, messageText, date);
     }
 
-    public String getMOTD(String userName) {
-        return dao.getMOTD(userName);
+    public Message getMOTD(String userName) {
+        return getMessageForDate(userName, LocalDate.now());
     }
 
-    public String getMessageForDate(String userName, LocalDate date) {
-        return dao.getMessageForDate(userName, date);
+    public Message getMessageForDate(String userName, LocalDate date) {
+        return dao.getMessageOfDate(userName, date)
+                .orElseGet(weirdJokeService::getRandomWeirdJoke);
     }
 
     public List<Message> getAllMessagesForUser(String userName) {
-        return dao.getAllMessagesForUser(userName);
+        return dao.getAllMessages(userName);
     }
 }
