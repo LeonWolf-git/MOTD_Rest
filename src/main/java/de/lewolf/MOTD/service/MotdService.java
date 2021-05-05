@@ -33,7 +33,7 @@ public class MotdService {
 
     public Message getMessageForDate(String userName, LocalDate date) {
         return dao.getMessageOfDate(userName, date)
-                .orElseGet(weirdJokeService::getRandomWeirdJoke);
+                .orElseGet(() -> weirdJokeService.getRandomWeirdJoke(date));
     }
 
     public List<Message> getAllMessagesForUser(String userName) {

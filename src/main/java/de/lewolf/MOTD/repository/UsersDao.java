@@ -1,12 +1,14 @@
 package de.lewolf.MOTD.repository;
 
 import de.lewolf.MOTD.exceptions.MessageNotFoundException;
+import de.lewolf.MOTD.exceptions.SomethingWentTerriblyWrongException;
 import de.lewolf.MOTD.exceptions.UserAlreadyExistsException;
 import de.lewolf.MOTD.exceptions.UserNotFoundException;
 import de.lewolf.MOTD.models.Message;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -86,6 +88,32 @@ public class UsersDao implements UsersDaoInterface {
 
     @Override
     public Optional<Message> getMessageOfDate(String username, LocalDate date) {
-        return Optional.empty();
+        try {
+            Message m = jdbcTemplate.query(
+                    "SELECT * FROM userdb.messages WHERE username=? AND dateOfMessage=?",
+                    new PreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                            preparedStatement.setString(1, username);
+                            preparedStatement.setDate(2, Date.valueOf(date));
+                        }
+                    },
+                    new ResultSetExtractor<Message>() {
+                        @Override
+                        public Message extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+                            if (resultSet.next()) {
+                                return new Message(resultSet.getString(2), resultSet.getDate(3).toLocalDate());
+                            }
+                            return null;
+                        }
+                    }
+            );
+            if (m != null) {
+                return Optional.of(m);
+            }
+            return Optional.empty();
+        } catch (DataAccessException e) {
+            throw new SomethingWentTerriblyWrongException("Irgendetwas stimmt hier nicht. RENN!!!!");
+        }
     }
 }
