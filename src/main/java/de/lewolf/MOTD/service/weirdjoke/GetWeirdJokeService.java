@@ -15,7 +15,7 @@ public class GetWeirdJokeService {
     }
 
     public Message getRandomWeirdJoke(LocalDate dom) {
-        return new Message(restClient.getWeirdJokeTemplate(), dom);
+        return new Message(restClient.getWeirdJokeWebClient(), dom);
     }
 
 }
