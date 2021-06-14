@@ -8,14 +8,14 @@ import java.time.LocalDate;
 @Service
 public class GetWeirdJokeService {
 
-    private WeirdJokeRestClient restClient;
+    private final WeirdJokeRestClient restClient;
 
     public GetWeirdJokeService(WeirdJokeRestClient restClient) {
         this.restClient = restClient;
     }
 
     public Message getRandomWeirdJoke(LocalDate dom) {
-        return new Message(restClient.getWeirdJoke(), dom);
+        return new Message(restClient.getWeirdJokeTemplate(), dom);
     }
 
 }
