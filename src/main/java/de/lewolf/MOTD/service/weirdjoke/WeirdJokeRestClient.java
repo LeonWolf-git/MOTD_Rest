@@ -1,17 +1,19 @@
 package de.lewolf.MOTD.service.weirdjoke;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.lewolf.MOTD.exceptions.SomethingWentTerriblyWrongException;
 import de.lewolf.MOTD.exceptions.URLNotResponsiveException;
+import de.lewolf.MOTD.models.JokeResponseDto;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,12 +24,13 @@ import java.util.LinkedHashMap;
 @Service
 public class WeirdJokeRestClient {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplateBuilder().rootUri("http://api.icndb.com").build();
+    private final String urlString = "http://api.icndb.com/jokes/random";
+    private final String urlPath = "/jokes/random";
 
     public String getWeirdJoke() {
-        String stringurl = "http://api.icndb.com/jokes/random";
         try {
-            URL url = new URL(stringurl);
+            URL url = new URL(urlString);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             try (InputStream is = con.getInputStream()) {
                 JSONParser jsonParser = new JSONParser(is);
@@ -37,40 +40,29 @@ public class WeirdJokeRestClient {
                 return message;
             }
         } catch (IOException | ParseException | JSONException e) {
-            throw new URLNotResponsiveException("Die aufgerufene Website: " + stringurl + " konnte nicht geladen werden!");
+            throw new URLNotResponsiveException("Die aufgerufene Website: " + urlString + " konnte nicht geladen werden!");
         }
     }
 
     public String getWeirdJokeTemplate() {
-        String stringurl = "http://api.icndb.com/jokes/random";
-        ResponseEntity<String> response = restTemplate.getForEntity(stringurl, String.class);
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode joke = mapper.readTree(response.getBody())
-                    .path("value")
-                    .path("joke");
-            return joke.toString();
-        } catch (JsonProcessingException e) {
-            throw new URLNotResponsiveException("Die aufgerufene Website: " + stringurl + " konnte nicht geladen werden!");
+            ResponseEntity<JokeResponseDto> jokeResponse = restTemplate.getForEntity(urlPath, JokeResponseDto.class);
+            return jokeResponse.getBody().getValue().getJokeText();
+        } catch (RestClientException e) {
+            throw new SomethingWentTerriblyWrongException("You did it, you broke it!");
         }
     }
 
-
     public String getWeirdJokeWebClient() {
-        String stringurl = "http://api.icndb.com/jokes/random";
-        WebClient webClient = WebClient.create(stringurl);
+        WebClient webClient = WebClient.create(urlString);
         WebClient.RequestHeadersSpec<?> requestHeadersSpec = webClient.get();
-        String jsonString = requestHeadersSpec.retrieve()
-                .bodyToMono(String.class)
+        JokeResponseDto jokeResponse = requestHeadersSpec.retrieve()
+                .bodyToMono(JokeResponseDto.class)
                 .block();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode joke = mapper.readTree(jsonString)
-                    .path("value")
-                    .path("joke");
-            return joke.toString();
-        } catch (JsonProcessingException e) {
-            throw new URLNotResponsiveException("Die aufgerufene Website: " + stringurl + " konnte nicht geladen werden!");
+            return jokeResponse.getValue().getJokeText();
+        } catch (WebClientException e) {
+            throw new SomethingWentTerriblyWrongException("You did it, you broke it!");
         }
     }
 }
